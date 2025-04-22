@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkin - 创建新活动</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <header class="navbar">
+        <div class="logo">Checkin</div>
+        <nav class="nav-links">
+            <a href="home.html" class="nav-link">我的签到</a>
+            <a href="create-activity.html" class="nav-link active">我发起的签到</a>
+            <a href="members.html" class="nav-link">成员名单</a>
+        </nav>
+        <button class="logout-btn">退出登录</button>
+    </header>
+
+    <!-- 创建活动表单容器 -->
+    <div class="form-container">
+        <h2>创建新活动</h2>
+        <form id="create-activity-form" class="create-activity-form">
+            <!-- 签到类型选择 -->
+            <div class="input-group">
+                <label for="activity-type"></label>
+                <select id="activity-type" name="activityType" required>
+                    <option value="">请选择签到类型</option>
+                    <option value="one-time">一次性签到</option>
+                    <option value="long-term">长期考勤</option>
+                </select>
+            </div>
+
+            <!-- 一次性签到字段 -->
+            <div id="one-time-fields" class="hidden">
+                <div class="input-group">
+                    <input type="datetime-local" id="start-time" name="startTime" required>
+                    <label for="start-time">开始时间</label>
+                </div>
+                <div class="input-group">
+                    <input type="number" id="duration" name="duration" min="1" required>
+                    <label for="duration">持续时间（分钟）</label>
+                </div>
+            </div>
+
+            <!-- 长期考勤字段 -->
+            <div id="long-term-fields" class="hidden">
+                <div class="input-group">
+                    <input type="date" id="start-date" name="startDate" required>
+                    <label for="start-date">开始日期</label>
+                </div>
+                <div class="input-group">
+                    <input type="date" id="end-date" name="endDate" required>
+                    <label for="end-date">结束日期</label>
+                </div>
+                <div class="input-group">
+                    <input type="time" id="daily-deadline" name="dailyDeadline" required>
+                    <label for="daily-deadline">每天打卡截止时间</label>
+                </div>
+            </div>
+
+            <!-- 成员名单名称 -->
+            <div class="input-group">
+                <input type="text" id="member-list-name" name="memberListName" required>
+                <label for="member-list-name">成员名单名称</label>
+            </div>
+
+            <!-- 提交按钮 -->
+            <button type="submit" class="btn btn-create">创建活动</button>
+        </form>
+    </div>
+
+    <script>
+        // 获取表单元素
+        const form = document.getElementById('create-activity-form');
+        const activityTypeSelect = document.getElementById('activity-type');
+        const oneTimeFields = document.getElementById('one-time-fields');
+        const longTermFields = document.getElementById('long-term-fields');
+
+        // 根据签到类型切换显示的字段
+        activityTypeSelect.addEventListener('change', () => {
+            if (activityTypeSelect.value === 'one-time') {
+                oneTimeFields.classList.remove('hidden');
+                longTermFields.classList.add('hidden');
+            } else if (activityTypeSelect.value === 'long-term') {
+                oneTimeFields.classList.add('hidden');
+                longTermFields.classList.remove('hidden');
+            } else {
+                oneTimeFields.classList.add('hidden');
+                longTermFields.classList.add('hidden');
+            }
+        });
+
+        // 表单提交功能
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault(); // 阻止默认提交行为
+
+            // 收集表单数据
+            const formData = new FormData(form);
+            const activityType = formData.get('activityType');
+            const memberListName = formData.get('memberListName');
+
+            const payload = {
+                activityType,
+                memberListName
+            };
+
+            if (activityType === 'one-time') {
+                payload.startTime = formData.get('startTime');
+                payload.duration = parseInt(formData.get('duration'), 10);
+            } else if (activityType === 'long-term') {
+                payload.startDate = formData.get('startDate');
+                payload.endDate = formData.get('endDate');
+                payload.dailyDeadline = formData.get('dailyDeadline');
+            }
+
+            try {
+                const response = await fetch('/api/create-activity', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error('创建活动失败，请检查输入内容');
+                }
+
+                const result = await response.json();
+                alert(result.message || '活动创建成功！');
+                window.location.href = 'create-activity.html'; // 返回到创建活动列表页
+            } catch (error) {
+                console.error(error);
+                alert(error.message || '创建活动失败，请稍后再试。');
+            }
+        });
+    </script>
+</body>
+</html>

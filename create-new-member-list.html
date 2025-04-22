@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkin - 新建名单</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <header class="navbar">
+        <div class="logo">Checkin</div>
+        <nav class="nav-links">
+            <a href="home.html" class="nav-link">我的签到</a>
+            <a href="create-activity.html" class="nav-link">我发起的签到</a>
+            <a href="members.html" class="nav-link active">成员名单</a>
+        </nav>
+        <button class="logout-btn">退出登录</button>
+    </header>
+
+    <!-- 创建名单表单容器 -->
+    <div class="form-container">
+        <h2>新建成员名单</h2>
+        <br><br>
+        <form id="create-member-list-form" class="create-member-list-form">
+            <!-- 名单名称 -->
+            <div class="input-group">
+                <input type="text" id="list-name" name="listName" required>
+                <label for="list-name">名单名称</label>
+            </div>
+
+            <!-- 错误提示 -->
+            <div id="error-message" class="error-message hidden"></div>
+
+            <!-- 提交按钮 -->
+            <button type="submit" class="btn btn-create">创建名单</button>
+        </form>
+    </div>
+
+    <script>
+        // 获取表单元素
+        const form = document.getElementById('create-member-list-form');
+        const errorMessageDiv = document.getElementById('error-message');
+
+        // 表单提交功能
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault(); // 阻止默认提交行为
+
+            // 清空之前的错误提示
+            errorMessageDiv.textContent = '';
+            errorMessageDiv.classList.add('hidden');
+
+            // 收集表单数据
+            const formData = new FormData(form);
+            const listName = formData.get('listName');
+
+            try {
+                const response = await fetch('/api/create-member-list', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ listName })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || '创建名单失败，请稍后再试。');
+                }
+
+                const result = await response.json();
+                alert(result.message || '名单创建成功！');
+                window.location.href = 'members.html'; // 返回到成员名单页面
+            } catch (error) {
+                console.error(error);
+                errorMessageDiv.textContent = error.message; // 显示错误提示
+                errorMessageDiv.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkin - 打卡详情</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <header class="navbar">
+        <div class="logo">Checkin</div>
+        <nav class="nav-links">
+            <a href="home.html" class="nav-link">我的签到</a>
+            <a href="create-activity.html" class="nav-link">我发起的签到</a>
+            <a href="members.html" class="nav-link">成员名单</a>
+        </nav>
+        <button class="logout-btn">退出登录</button>
+    </header>
+
+    <!-- 活动详情容器 -->
+    <div class="activity-detail-container">
+        <h2>打卡详情</h2>
+        <div id="activity-detail" class="activity-detail">
+            <!-- 活动详情将动态生成 -->
+        </div>
+
+        <!-- 验证码输入表单 -->
+        <form id="checkin-form" class="checkin-form">
+            <div class="input-group">
+                <input type="text" id="verification-code" name="verificationCode" placeholder="请输入验证码" required>
+                <label for="verification-code"></label>
+            </div>
+            <button type="submit" class="btn btn-checkin">提交打卡</button>
+        </form>
+    </div>
+
+    <script>
+        // 从URL中获取活动ID
+        const urlParams = new URLSearchParams(window.location.search);
+        const activityId = urlParams.get('id');
+
+        // 假设用户ID存储在localStorage中（实际项目中可能通过后端返回）
+        const userId = localStorage.getItem('userId') || 'unknown'; // 示例：从本地存储获取用户ID
+
+        // 模拟从后端获取活动详情数据
+        async function fetchActivityDetail() {
+            try {
+                const response = await fetch(`/api/activity/${activityId}`); // 替换为实际的API地址
+                if (!response.ok) {
+                    throw new Error('无法获取活动详情');
+                }
+                const data = await response.json();
+
+                // 渲染活动详情
+                const activityDetail = document.getElementById('activity-detail');
+                activityDetail.innerHTML = `
+                    <div class="detail-item"><span>活动名称:</span> ${data.name || '未命名'}</div>
+                    <div class="detail-item"><span>开始时间:</span> ${new Date(data.startTime).toLocaleString()}</div>
+                    <div class="detail-item"><span>结束时间:</span> ${new Date(data.endTime).toLocaleString()}</div>
+                `;
+            } catch (error) {
+                console.error(error);
+                document.getElementById('activity-detail').innerHTML = '<p>加载活动详情失败，请稍后再试。</p>';
+            }
+        }
+
+        // 表单提交功能
+        document.getElementById('checkin-form').addEventListener('submit', async (event) => {
+            event.preventDefault(); // 阻止默认提交行为
+
+            const verificationCode = document.getElementById('verification-code').value;
+
+            try {
+                const response = await fetch('/api/checkin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        activityId: activityId,
+                        userId: userId,
+                        verificationCode: verificationCode
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('打卡失败，请检查验证码是否正确');
+                }
+
+                const result = await response.json();
+                alert(result.message || '打卡成功！');
+                window.location.href = 'home.html'; // 返回主页
+            } catch (error) {
+                console.error(error);
+                alert(error.message || '打卡失败，请稍后再试。');
+            }
+        });
+
+        // 页面加载时调用
+        window.onload = fetchActivityDetail;
+    </script>
+</body>
+</html>

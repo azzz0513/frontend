@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkin - 成员名单</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <header class="navbar">
+        <div class="logo">Checkin</div>
+        <nav class="nav-links">
+            <a href="home.html" class="nav-link">我的签到</a>
+            <a href="create-activity.html" class="nav-link">我发起的签到</a>
+            <a href="members.html" class="nav-link active">成员名单</a>
+        </nav>
+        <button class="logout-btn">退出登录</button>
+    </header>
+
+    <!-- 成员名单列表容器 -->
+    <div class="member-container">
+        
+        <div id="member-list" class="member-list">
+            <!-- 成员名单将动态生成 -->
+        </div>
+    </div>
+
+    <!-- 加号按钮 -->
+
+    <div class="add-btn-container">
+        <a href="create-new-member-list.html" class="add-btn">+</a>
+    </div>
+
+    <script>
+        // 模拟从后端获取数据
+        async function fetchMemberList() {
+            try {
+                const response = await fetch('/api/user/member-list'); // 替换为实际的API地址
+                if (!response.ok) {
+                    throw new Error('无法获取成员名单');
+                }
+                const data = await response.json();
+
+                const members = data.members;
+                const memberList = document.getElementById('member-list');
+
+                if (members.length === 0) {
+                    memberList.innerHTML = '<p>暂无成员名单。</p>';
+                    return;
+                }
+
+                members.forEach(member => {
+                    const memberItem = document.createElement('div');
+                    memberItem.className = 'member-item';
+
+                    const link = document.createElement('a');
+                    link.href = `member-detail.html?id=${member.id}`; // 跳转到成员详情页面，并传递成员ID
+                    link.textContent = `${member.name || '未命名'} (${member.email || '无邮箱'})`;
+
+                    memberItem.appendChild(link);
+                    memberList.appendChild(memberItem);
+                });
+            } catch (error) {
+                console.error(error);
+                document.getElementById('member-list').innerHTML = '<p>加载成员名单失败，请稍后再试。</p>';
+            }
+        }
+
+        // 页面加载时调用
+        window.onload = fetchMemberList;
+
+        // 退出登录按钮功能
+        document.querySelector('.logout-btn').addEventListener('click', () => {
+            // 跳转到登录页面或调用退出登录接口
+            window.location.href = 'login.html';
+        });
+    </script>
+</body>
+</html>

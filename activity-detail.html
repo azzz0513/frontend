@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkin - 活动详情</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <header class="navbar">
+        <div class="logo">Checkin</div>
+        <nav class="nav-links">
+            <a href="home.html" class="nav-link">我的签到</a>
+            <a href="create-activity.html" class="nav-link">我发起的签到</a>
+            <a href="members.html" class="nav-link">成员名单</a>
+        </nav>
+        <button class="logout-btn">退出登录</button>
+    </header>
+
+    <!-- 活动详情容器 -->
+    <div class="activity-detail-container">
+        <h2>活动详情</h2>
+        <div id="activity-info" class="activity-info">
+            <!-- 活动信息将动态生成 -->
+        </div>
+
+        <!-- 成员名单列表 -->
+        <div id="member-list" class="member-list">
+            <!-- 成员名单将动态生成 -->
+        </div>
+    </div>
+
+    <script>
+        // 从URL中获取活动ID
+        const urlParams = new URLSearchParams(window.location.search);
+        const activityId = urlParams.get('id');
+
+        // 模拟从后端获取活动详情数据
+        async function fetchActivityDetail() {
+            try {
+                const response = await fetch(`/api/activity/${activityId}`); // 替换为实际的API地址
+                if (!response.ok) {
+                    throw new Error('无法获取活动详情');
+                }
+                const data = await response.json();
+
+                // 渲染活动基本信息
+                const activityInfo = document.getElementById('activity-info');
+                activityInfo.innerHTML = `
+                    <div class="detail-item"><span>活动名称:</span> ${data.name || '未命名'}</div>
+                    <div class="detail-item"><span>开始时间:</span> ${new Date(data.startTime).toLocaleString()}</div>
+                    <div class="detail-item"><span>结束时间:</span> ${new Date(data.endTime).toLocaleString()}</div>
+                    <div class="detail-item"><span>活动类型:</span> ${data.type === 'one-time' ? '一次性活动' : '长期考勤'}</div>
+                `;
+
+                // 渲染成员名单
+                const memberList = document.getElementById('member-list');
+                const members = data.members;
+
+                if (members.length === 0) {
+                    memberList.innerHTML = '<p>暂无成员参与此活动。</p>';
+                    return;
+                }
+
+                if (data.type === 'one-time') {
+                    // 一次性活动：列出用户名、是否打卡、打卡时间
+                    memberList.innerHTML = `
+                        <h3>成员名单</h3>
+                        <table class="member-table">
+                            <thead>
+                                <tr>
+                                    <th>用户名</th>
+                                    <th>是否打卡</th>
+                                    <th>打卡时间</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${members.map(member => `
+                                    <tr>
+                                        <td>${member.name || '未命名'}</td>
+                                        <td>${member.checkedIn ? '已打卡' : '未打卡'}</td>
+                                        <td>${member.checkInTime ? new Date(member.checkInTime).toLocaleString() : '-'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    // 长期考勤：列出用户名、打卡次数
+                    memberList.innerHTML = `
+                        <h3>成员名单</h3>
+                        <table class="member-table">
+                            <thead>
+                                <tr>
+                                    <th>用户名</th>
+                                    <th>打卡次数</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${members.map(member => `
+                                    <tr>
+                                        <td>${member.name || '未命名'}</td>
+                                        <td>${member.checkInCount || 0}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                }
+            } catch (error) {
+                console.error(error);
+                document.getElementById('activity-info').innerHTML = '<p>加载活动详情失败，请稍后再试。</p>';
+                document.getElementById('member-list').innerHTML = '';
+            }
+        }
+
+        // 页面加载时调用
+        window.onload = fetchActivityDetail;
+
+        // 退出登录按钮功能
+        document.querySelector('.logout-btn').addEventListener('click', () => {
+            // 跳转到登录页面或调用退出登录接口
+            window.location.href = 'login.html';
+        });
+    </script>
+</body>
+</html>
