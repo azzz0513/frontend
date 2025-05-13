@@ -14,6 +14,7 @@
             <a href="home.html" class="nav-link active">我的签到</a>
             <a href="create-activity.html" class="nav-link">我发起的签到</a>
             <a href="members.html" class="nav-link">成员名单</a>
+            <a href="history.html" class="nav-link">历史活动</a>
         </nav>
         <button class="logout-btn">退出登录</button>
     </header>
@@ -26,19 +27,28 @@
         </div>
     </div>
 
-    <script>
+    <script src="common.js"></script>
+        <script>
         // 模拟从后端获取数据
         async function fetchJoinActivities() {
             try {
-                const response = await fetch('/api/user/join-activities'); // 替换为实际的API地址
+                const response = await fetch('http://127.0.0.1:8084/api/v1/checkin_list?page=1&size=10', {
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                    'Content-Type': 'application/json'
+                }
+            }); // 替换为实际的API地址
                 if (!response.ok) {
                     throw new Error('无法获取需要打卡的活动数据');
                 }
-                const data = await response.json();
+                const data1 = await response.json();
 
                 //后端获取的参加的活动的列表
-                const activities = data.joinActivities;
+                const activities = data1.data;
                 const activityList = document.getElementById('activity-list');
+
+                // 清空容器
+                activityList.innerHTML = '';
 
                 if (activities.length === 0) {
                     activityList.innerHTML = '<p>暂无需要打卡的活动。</p>';
@@ -50,8 +60,8 @@
                     activityItem.className = 'activity-item';
 
                     const link = document.createElement('a');
-                    link.href = `checkin.html?id=${activity.id}`; // 跳转到打卡页面，并传递活动ID
-                    link.textContent = `签到活动 #${activity.id} - ${activity.name || '未命名'}`;
+                    link.href = `checkin.html?id=${activity.checkin_id}`; // 跳转到打卡页面，并传递活动ID
+                    link.textContent = `签到活动 #${activity.checkin_id} - ${activity.title || '未命名'}`;
 
                     activityItem.appendChild(link);
                     activityList.appendChild(activityItem);

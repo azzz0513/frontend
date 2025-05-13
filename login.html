@@ -10,7 +10,7 @@
     <div class="container login-container">
         <!-- Logo -->
         <div class="logo">Checkin</div>
-        <form action="#" method="POST">
+        <form action="http://127.0.0.1:8084/api/v1/login" method="POST">
             <div class="input-group">
                 <input type="text" id="username" name="username" placeholder=" " required>
                 <label for="username">用户名</label>
@@ -31,5 +31,28 @@
             还没有账号？<a href="register.html">立即注册</a>
         </div>
     </div>
+    <script>
+        document.querySelector('form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = {
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value
+            };
+            const response = await fetch('http://127.0.0.1:8084/api/v1/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+            const data = await response.json();
+            if (data.data) {
+                localStorage.setItem('authToken', data.data);
+                window.location.href = 'home.html';
+            } else {
+                alert('登录失败，请重试');
+            }
+        });
+    </script>
 </body>
 </html>

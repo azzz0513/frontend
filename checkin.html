@@ -35,7 +35,16 @@
         </form>
     </div>
 
+    <script src="common.js"></script>
     <script>
+        // // 在所有请求中添加Authorization头
+        // const authToken = localStorage.getItem('authToken');
+        // if (authToken) {
+        //     fetch.defaults.headers = {
+        //         'Authorization': `Bearer ${authToken}`
+        //     };
+        // }
+
         // 从URL中获取活动ID
         const urlParams = new URLSearchParams(window.location.search);
         const activityId = urlParams.get('id');
@@ -46,18 +55,26 @@
         // 模拟从后端获取活动详情数据
         async function fetchActivityDetail() {
             try {
-                const response = await fetch(`/api/activity/${activityId}`); // 替换为实际的API地址
+                const response = await fetch(`http://127.0.0.1:8084/api/v1/participate_detail/${activityId}`); // 替换为实际的API地址
                 if (!response.ok) {
                     throw new Error('无法获取活动详情');
                 }
-                const data = await response.json();
+                const data1 = await response.json();
+                const data = data1.data;
 
                 // 渲染活动详情
                 const activityDetail = document.getElementById('activity-detail');
                 activityDetail.innerHTML = `
-                    <div class="detail-item"><span>活动名称:</span> ${data.name || '未命名'}</div>
-                    <div class="detail-item"><span>开始时间:</span> ${new Date(data.startTime).toLocaleString()}</div>
-                    <div class="detail-item"><span>结束时间:</span> ${new Date(data.endTime).toLocaleString()}</div>
+                    <div class="detail-item"><span>活动名称:</span> ${data.title || '未命名'}</div>
+                    <div class="detail-item"><span>活动类型:</span> ${data.type || '未知类型'}</div>
+                    <div class="detail-item"><span>活动描述:</span> ${data.content || '暂无描述'}</div>
+                    ${data.type === '一次性签到' ? `
+                        <div class="detail-item"><span>开始时间:</span> ${new Date(data.create_time).toLocaleString()}</div>
+                    ` : `
+                        <div class="detail-item"><span>开始日期:</span> ${new Date(data.startDate).toLocaleDateString()}</div>
+                        <div class="detail-item"><span>结束日期:</span> ${new Date(data.endDate).toLocaleDateString()}</div>
+                        <div class="detail-item"><span>每日截止时间:</span> ${new Date(data.dailyEndTime).toLocaleTimeString()}</div>
+                    `}
                 `;
             } catch (error) {
                 console.error(error);
@@ -69,19 +86,18 @@
         document.getElementById('checkin-form').addEventListener('submit', async (event) => {
             event.preventDefault(); // 阻止默认提交行为
 
-            const verificationCode = document.getElementById('verification-code').value;
-
+            const formData = {
+                verificationCode: event.target.verificationCode.value,
+                activityId: activityId,
+                userId: userId
+            };
             try {
-                const response = await fetch('/api/checkin', {
+                const response = await fetch(`http://127.0.0.1:8084/api/v1/participate/${activityId}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        activityId: activityId,
-                        userId: userId,
-                        verificationCode: verificationCode
-                    })
+                    body: JSON.stringify(formData)
                 });
 
                 if (!response.ok) {

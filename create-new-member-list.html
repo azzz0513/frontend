@@ -25,7 +25,7 @@
         <form id="create-member-list-form" class="create-member-list-form">
             <!-- 名单名称 -->
             <div class="input-group">
-                <input type="text" id="list-name" name="listName" required>
+                <input type="text" id="list-name" name="list_name" required>
                 <label for="list-name">名单名称</label>
             </div>
 
@@ -37,6 +37,7 @@
         </form>
     </div>
 
+    <script src="common.js"></script>
     <script>
         // 获取表单元素
         const form = document.getElementById('create-member-list-form');
@@ -52,15 +53,15 @@
 
             // 收集表单数据
             const formData = new FormData(form);
-            const listName = formData.get('listName');
+            const list_name = formData.get('list_name');
 
             try {
-                const response = await fetch('/api/create-member-list', {
+                const response = await fetch('http://127.0.0.1:8084/api/v1/create_member_list', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ listName })
+                    body: JSON.stringify({ list_name })
                 });
 
                 if (!response.ok) {

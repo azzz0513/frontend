@@ -36,6 +36,7 @@
         </form>
     </div>
 
+    <script src="common.js"></script>
     <script>
         // 从URL中获取名单ID
         const urlParams = new URLSearchParams(window.location.search);
@@ -44,18 +45,24 @@
         // 模拟从后端获取成员名单数据
         async function fetchMemberList() {
             try {
-                const response = await fetch(`/api/member-list/${listId}`); // 替换为实际的API地址
+                const response = await fetch(`http://127.0.0.1:8084/api/v1/member_list/${listId}?page=1&size=10`, {
+    headers: {
+        'Authorization': 'Bearer ' + localStorage.getItem('token'),
+        'Content-Type': 'application/json'
+    }
+}); // 替换为实际的API地址
                 if (!response.ok) {
                     throw new Error('无法获取成员名单');
                 }
-                const data = await response.json();
+                const data1 = await response.json();
+                const data = data1.data;
 
                 // 渲染名单名称
-                document.getElementById('list-name').textContent = data.name || '未命名';
+                document.getElementById('list-name').textContent = data.name || '';
 
                 // 渲染成员列表
                 const memberListDiv = document.getElementById('member-list');
-                const members = data.memberList;
+                const members = data;
 
                 if (members.length === 0) {
                     memberListDiv.innerHTML = '<p>暂无成员。</p>';
@@ -67,14 +74,14 @@
                         <thead>
                             <tr>
                                 <th>成员名称</th>
-                                <th>加入日期</th>
+                                <th>操作</th>
                             </tr>
                         </thead>
                         <tbody>
                             ${members.map(member => `
                                 <tr>
-                                    <td>${member.name || '未命名'}</td>
-                                    <td>${new Date(member.joinDate).toLocaleString()}</td>
+                                    <td>${member.member_name || '未命名'}</td>
+                                    <td><button class="btn btn-delete" data-member-id="${member.member_id}">删除</button></td>
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -82,7 +89,7 @@
                 `;
             } catch (error) {
                 console.error(error);
-                document.getElementById('member-list').innerHTML = '<p>加载成员名单失败，请稍后再试。</p>';
+                //document.getElementById('member-list').innerHTML = '<p>加载成员名单失败，请稍后再试。</p>';
             }
         }
 
@@ -91,20 +98,19 @@
         addMemberForm.addEventListener('submit', async (event) => {
             event.preventDefault(); // 阻止默认提交行为
 
-            // 收集表单数据
-            const formData = new FormData(addMemberForm);
-            const memberId = formData.get('memberId');
+            const formData = {
+                list_id: listId,
+                member_id: document.getElementById('member-id').value
+            };
 
             try {
-                const response = await fetch('/api/add-member-to-list', {
+                const response = await fetch('http://127.0.0.1:8084/api/v1/add_member', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
-                    body: JSON.stringify({
-                        listId: listId,
-                        memberId: memberId
-                    })
+                    body: JSON.stringify(formData)
                 });
 
                 if (!response.ok) {
@@ -118,6 +124,37 @@
             } catch (error) {
                 console.error(error);
                 alert(error.message || '添加成员失败，请稍后再试。');
+            }
+        });
+
+        // 添加删除按钮点击事件
+        document.addEventListener('click', async (event) => {
+            if (event.target.classList.contains('btn-delete')) {
+                const memberId = event.target.dataset.memberId;
+                try {
+                    const response = await fetch('http://127.0.0.1:8084/api/v1/delete_member', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            list_id: listId,
+                            member_id: memberId
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('删除成员失败');
+                    }
+
+                    const result = await response.json();
+                    alert(result.message || '成员删除成功！');
+                    fetchMemberList(); // 刷新成员列表
+                } catch (error) {
+                    console.error(error);
+                    alert(error.message || '删除成员失败，请稍后再试。');
+                }
             }
         });
 

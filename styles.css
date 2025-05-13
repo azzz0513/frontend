@@ -14,6 +14,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    color: #333;
 }
 
 .container {
@@ -42,7 +43,7 @@ body {
     display: block;
     width: 60px;
     height: 4px;
-    background-color: #6e8efb;
+    background-color: #3498db;
     margin: 10px auto 0;
     border-radius: 2px;
 }
@@ -67,7 +68,7 @@ body {
 }
 
 .input-group input:focus {
-    border-color: #6e8efb;
+    border-color: #3498db;
     outline: none;
 }
 
@@ -92,7 +93,7 @@ body {
 .btn {
     width: 100%;
     padding: 12px;
-    background-color: #6e8efb;
+    background-color: #3498db;
     color: white;
     border: none;
     border-radius: 5px;
@@ -208,11 +209,32 @@ body {
 .detail-item {
     margin-bottom: 10px;
     font-size: 16px;
+    color: #333;
 }
 
-.detail-item span {
-    font-weight: bold;
-    color: #6e8efb;
+.activity-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.activity-table td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    vertical-align: top;
+}
+
+.detail-name {
+    width: 30%;
+    color: #2c3e50;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.detail-content {
+    width: 70%;
+    color: #333;
+    line-height: 1.6;
 }
 
 
@@ -229,7 +251,7 @@ body {
     height: 60px;
     font-size: 36px;
     color: white;
-    background-color: #6e8efb;
+    background-color: #3498db;
     border-radius: 50%; /* 圆形轮廓 */
     text-decoration: none;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* 添加阴影 */
@@ -333,11 +355,32 @@ body {
 .detail-item {
     margin-bottom: 10px;
     font-size: 16px;
+    color: #333;
 }
 
-.detail-item span {
-    font-weight: bold;
-    color: #6e8efb;
+.activity-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.activity-table td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    vertical-align: top;
+}
+
+.detail-name {
+    width: 30%;
+    color: #2c3e50;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.detail-content {
+    width: 70%;
+    color: #333;
+    line-height: 1.6;
 }
 
 /* 验证码输入表单 */
@@ -361,7 +404,7 @@ body {
 }
 
 .input-group input:focus {
-    border-color: #6e8efb;
+    border-color: #3498db;
     outline: none;
 }
 
@@ -386,7 +429,7 @@ body {
 .btn-checkin {
     width: 100%;
     padding: 12px;
-    background-color: #6e8efb;
+    background-color: #3498db;
     color: white;
     border: none;
     border-radius: 5px;
@@ -400,9 +443,12 @@ body {
 }
 
 /* 表单容器 */
-.form-container {
-    width: 75%;
-    margin: 50px auto;
+.form-container,
+.activity-item,
+.member-item {
+    width: 75vw;
+    max-width: 900px;
+    margin: 10px auto;
     padding: 20px;
     background-color: #f9f9f9;
     border-radius: 10px;
@@ -436,7 +482,7 @@ body {
 
 .input-group input:focus,
 .input-group select:focus {
-    border-color: #6e8efb;
+    border-color: #3498db;
     outline: none;
 }
 
@@ -447,7 +493,7 @@ body {
 .btn-create {
     width: 100%;
     padding: 12px;
-    background-color: #6e8efb;
+    background-color: #3498db;
     color: white;
     border: none;
     border-radius: 5px;
@@ -461,9 +507,12 @@ body {
 }
 
 /* 表单容器 */
-.form-container {
-    width: 75%;
-    margin: 50px auto;
+.form-container,
+.activity-item,
+.member-item {
+    width: 75vw;
+    max-width: 900px;
+    margin: 10px auto;
     padding: 20px;
     background-color: #f9f9f9;
     border-radius: 10px;
@@ -489,7 +538,7 @@ body {
 }
 
 .input-group input:focus {
-    border-color: #6e8efb;
+    border-color: #3498db;
     outline: none;
 }
 
@@ -525,7 +574,7 @@ body {
 .btn-create {
     width: 100%;
     padding: 12px;
-    background-color: #6e8efb;
+    background-color: #3498db;
     color: white;
     border: none;
     border-radius: 5px;

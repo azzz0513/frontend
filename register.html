@@ -11,7 +11,7 @@
         <!-- Logo -->
         <div class="logo">Checkin</div>
         <h2>注册</h2>
-        <form action="#" method="POST">
+        <form id="register-form">
             <div class="input-group">
                 <input type="text" id="username" name="username" placeholder=" " required>
                 <label for="username">用户名</label>
@@ -21,11 +21,38 @@
                 <label for="password">密码</label>
             </div>
             <div class="input-group">
-                <input type="password" id="confirm-password" name="confirm-password" placeholder=" " required>
+                <input type="password" id="re_password" name="re_password" placeholder=" " required>
                 <label for="confirm-password">确认密码</label>
             </div>
             <button type="submit" class="btn btn-register">注册</button>
         </form>
+<script>
+document.getElementById('register-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const formData = {
+    username: document.getElementById('username').value,
+    password: document.getElementById('password').value,
+    re_password: document.getElementById('re_password').value
+  };
+  try {
+    const response = await fetch('http://127.0.0.1:8084/api/v1/signup', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(formData)
+    });
+    if (response.ok) {
+      window.location.href = 'login.html';
+    } else {
+      alert('注册失败，请重试');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('网络错误，请重试');
+  }
+});
+</script>
         <div class="back-to-other">
             已有账号？<a href="login.html">返回登录</a>
         </div>

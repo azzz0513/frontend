@@ -30,18 +30,18 @@
     <div class="add-btn-container">
         <a href="create-new-activity.html" class="add-btn">+</a>
     </div>
-
+    <script src="common.js"></script>
     <script>
         // 模拟从后端获取数据
         async function fetchCreateActivities() {
             try {
-                const response = await fetch('/api/user/create-activities'); // 替换为实际的API地址
+                const response = await fetch('http://127.0.0.1:8084/api/v1/created_list'); // 替换为实际的API地址
                 if (!response.ok) {
                     throw new Error('无法获取创建的活动数据');
                 }
                 const data = await response.json();
 
-                const activities = data.createActivities;
+                const activities = data.data;
                 const activityList = document.getElementById('activity-list');
 
                 if (activities.length === 0) {
@@ -54,8 +54,8 @@
                     activityItem.className = 'activity-item';
 
                     const link = document.createElement('a');
-                    link.href = `activity-detail.html?id=${activity.id}`; // 跳转到活动详情页面，并传递活动ID
-                    link.textContent = `签到活动 #${activity.id} - ${activity.name || '未命名'}`;
+                    link.href = `activity-detail.html?id=${activity.checkin_id}`; // 跳转到活动详情页面，并传递活动ID
+                    link.textContent = `${activity.title} #${activity.checkin_id} - ${activity.list_name || '未命名'}`;
 
                     activityItem.appendChild(link);
                     activityList.appendChild(activityItem);

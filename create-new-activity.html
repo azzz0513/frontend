@@ -60,7 +60,32 @@
                 </div>
             </div>
 
+            <!-- 签到方式选择 -->
+            <div class="input-group">
+                <label for="checkin-method"></label>
+                <select id="checkin-method" name="checkinMethod" required>
+                    <option value="">请选择签到方式</option>
+                    <option value="verification-code">验证码签到</option>
+                </select>
+            </div>
+
+            <!-- 验证码输入字段 -->
+            <div id="verification-code-field" class="hidden">
+                <div class="input-group">
+                    <input type="text" id="verification-code" name="verificationCode" required>
+                    <label for="verification-code">验证码</label>
+                </div>
+            </div>
+
             <!-- 成员名单名称 -->
+            <div class="input-group">
+                <input type="text" id="activity-name" name="activityName" required>
+                <label for="activity-name">活动名称</label>
+            </div>
+            <div class="input-group">
+                <textarea id="activity-description" name="activityDescription" required></textarea>
+                <label for="activity-description">活动描述</label>
+            </div>
             <div class="input-group">
                 <input type="text" id="member-list-name" name="memberListName" required>
                 <label for="member-list-name">成员名单名称</label>
@@ -71,24 +96,51 @@
         </form>
     </div>
 
+    <script src="common.js"></script>
     <script>
         // 获取表单元素
         const form = document.getElementById('create-activity-form');
         const activityTypeSelect = document.getElementById('activity-type');
         const oneTimeFields = document.getElementById('one-time-fields');
         const longTermFields = document.getElementById('long-term-fields');
+        const checkinMethodSelect = document.getElementById('checkin-method');
+        const verificationCodeField = document.getElementById('verification-code-field');
 
         // 根据签到类型切换显示的字段
         activityTypeSelect.addEventListener('change', () => {
             if (activityTypeSelect.value === 'one-time') {
                 oneTimeFields.classList.remove('hidden');
                 longTermFields.classList.add('hidden');
+                document.getElementById('start-time').required = true;
+                document.getElementById('duration').required = true;
+                document.getElementById('start-date').required = false;
+                document.getElementById('end-date').required = false;
+                document.getElementById('daily-deadline').required = false;
             } else if (activityTypeSelect.value === 'long-term') {
                 oneTimeFields.classList.add('hidden');
                 longTermFields.classList.remove('hidden');
+                document.getElementById('start-time').required = false;
+                document.getElementById('duration').required = false;
+                document.getElementById('start-date').required = true;
+                document.getElementById('end-date').required = true;
+                document.getElementById('daily-deadline').required = true;
             } else {
                 oneTimeFields.classList.add('hidden');
                 longTermFields.classList.add('hidden');
+                document.getElementById('start-time').required = false;
+                document.getElementById('duration').required = false;
+                document.getElementById('start-date').required = false;
+                document.getElementById('end-date').required = false;
+                document.getElementById('daily-deadline').required = false;
+            }
+        });
+
+        // 处理签到方式选择
+        checkinMethodSelect.addEventListener('change', () => {
+            if (checkinMethodSelect.value === 'verification-code') {
+                verificationCodeField.classList.remove('hidden');
+            } else {
+                verificationCodeField.classList.add('hidden');
             }
         });
 
@@ -96,27 +148,77 @@
         form.addEventListener('submit', async (event) => {
             event.preventDefault(); // 阻止默认提交行为
 
+        // 新增：时间格式化函数
+        const formatTimeWithTimezone = (datetimeStr) => {
+            if (!datetimeStr) return '';
+            
+            const date = new Date(datetimeStr);
+            // 手动构建带时区的时间字符串
+            const pad = n => n.toString().padStart(2, '0');
+            const tzOffset = -date.getTimezoneOffset();
+            const sign = tzOffset >= 0 ? '+' : '-';
+            const hours = pad(Math.floor(Math.abs(tzOffset) / 60));
+            const minutes = pad(Math.abs(tzOffset) % 60);
+            
+            return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T` +
+                `${pad(date.getHours())}:${pad(date.getMinutes())}:00` + 
+                `${sign}${hours}:${minutes}`;
+        };
+
             // 收集表单数据
             const formData = new FormData(form);
             const activityType = formData.get('activityType');
             const memberListName = formData.get('memberListName');
 
             const payload = {
-                activityType,
-                memberListName
+                type_id: activityType === 'one-time' ? 1 : 2,
+                way_id: checkinMethodSelect.value === 'verification-code' ? 1 : 0,
+                list_name: memberListName,
+                title: formData.get('activityName'),
+                content: formData.get('activityDescription'),
+                password: formData.get('verificationCode') || '',
             };
 
-            if (activityType === 'one-time') {
-                payload.startTime = formData.get('startTime');
-                payload.duration = parseInt(formData.get('duration'), 10);
-            } else if (activityType === 'long-term') {
-                payload.startDate = formData.get('startDate');
-                payload.endDate = formData.get('endDate');
-                payload.dailyDeadline = formData.get('dailyDeadline');
+            if (formData.get('checkinMethod') === 'verification-code') {
+                payload.verificationCode = formData.get('verificationCode');
             }
 
+        // 按类型添加专属字段
+        if (activityType === 'one-time') {
+            // 验证必填字段
+            const startTime = formData.get('startTime');
+            const duration = formData.get('duration');
+            if (!startTime || !duration) {
+                alert('请填写开始时间和持续时间');
+                return;
+            }
+
+            // 添加一次性签到字段
+            Object.assign(payload, {
+                start_time: formatTimeWithTimezone(startTime),
+                duration_minutes: parseInt(duration, 10)
+            });
+        } 
+        else if (activityType === 'long-term') {
+            // 验证必填字段
+            const startDate = formData.get('startDate');
+            const endDate = formData.get('endDate');
+            const dailyDeadline = formData.get('dailyDeadline');
+            if (!startDate || !endDate || !dailyDeadline) {
+                alert('请填写完整的日期信息');
+                return;
+            }
+
+            // 添加长期考勤字段
+            Object.assign(payload, {
+                start_date: `${startDate}T00:00:00+08:00`,
+                end_date: `${endDate}T23:59:59+08:00`,
+                daily_deadline: `${dailyDeadline}:00`
+            });
+        }
+
             try {
-                const response = await fetch('/api/create-activity', {
+                const response = await fetch('http://127.0.0.1:8084/api/v1/checkin', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
