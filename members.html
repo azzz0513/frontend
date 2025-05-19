@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkin - 成员名单</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
     <!-- 导航栏 -->
@@ -32,12 +32,12 @@
         <a href="create-new-member-list.html" class="add-btn">+</a>
     </div>
 
-    <script src="common.js"></script>
+    <script src="js/common.js"></script>
     <script>
         // 模拟从后端获取数据
         async function fetchMemberList() {
             try {
-                const response = await fetch('http://127.0.0.1:8084/api/v1/member_list?page=1&size=10', {
+                const response = await fetch('/api/v1/member_list?page=1&size=10', {
     headers: {
         'Authorization': 'Bearer ' + localStorage.getItem('token')
     }

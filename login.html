@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkin - 登录</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
     <div class="container login-container">
         <!-- Logo -->
         <div class="logo">Checkin</div>
-        <form action="http://127.0.0.1:8084/api/v1/login" method="POST">
+        <form action="http://localhost:8888/api/v1/login" method="POST">
             <div class="input-group">
                 <input type="text" id="username" name="username" placeholder=" " required>
                 <label for="username">用户名</label>
@@ -38,7 +38,7 @@
                 username: document.getElementById('username').value,
                 password: document.getElementById('password').value
             };
-            const response = await fetch('http://127.0.0.1:8084/api/v1/login', {
+            const response = await fetch('/api/v1/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Checkin - 打卡详情</title>
-        <link rel="stylesheet" href="styles.css">
+        <link rel="stylesheet" href="css/styles.css">
     </head>
     <body>
         <!-- 导航栏 -->
@@ -26,7 +26,7 @@
             </div>
         </div>
 
-        <script src="common.js"></script>
+        <script src="js/common.js"></script>
         <script>
             // // 在所有请求中添加Authorization头
             // const authToken = localStorage.getItem('authToken');
@@ -46,7 +46,7 @@
             // 模拟从后端获取活动详情数据
             async function fetchActivityDetail() {
                 try {
-                    const response = await fetch(`http://127.0.0.1:8084/api/v1/history/${activityId}`); // 替换为实际的API地址
+                    const response = await fetch(`/api/v1/history/${activityId}`); // 替换为实际的API地址
                     if (!response.ok) {
                         throw new Error('无法获取活动详情');
                     }

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkin - 注册</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
     <div class="container register-container">
@@ -35,7 +35,7 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     re_password: document.getElementById('re_password').value
   };
   try {
-    const response = await fetch('http://127.0.0.1:8084/api/v1/signup', {
+    const response = await fetch('/api/v1/signup', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

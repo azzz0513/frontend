@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkin - 活动详情</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
     <!-- 导航栏 -->
@@ -30,7 +30,7 @@
             <!-- 成员名单将动态生成 -->
         </div>
     </div>
-    <script src="common.js"></script>
+    <script src="js/common.js"></script>
     <script>
         // 从URL中获取活动ID
         const urlParams = new URLSearchParams(window.location.search);
@@ -39,7 +39,7 @@
         // 模拟从后端获取活动详情数据
         async function fetchActivityDetail() {
             try {
-                const response = await fetch(`http://127.0.0.1:8084/api/v1/checkin/${activityId}?page=1&size=10`, {
+                const response = await fetch(`/api/v1/checkin/${activityId}?page=1&size=10`, {
     headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
         'Content-Type': 'application/json'

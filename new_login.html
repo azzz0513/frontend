@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkin - 登录</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
     <div class="container login-container">
@@ -39,7 +39,7 @@
     password: document.getElementById('password').value
     };
 
-    await fetch('http://localhost:8084/api/v1/login', {
+    await fetch('/api/v1/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json' // 明确指定 JSON 格式

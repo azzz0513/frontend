@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkin - 创建签到</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
     <!-- 导航栏 -->
@@ -30,12 +30,12 @@
     <div class="add-btn-container">
         <a href="create-new-activity.html" class="add-btn">+</a>
     </div>
-    <script src="common.js"></script>
+    <script src="js/common.js"></script>
     <script>
         // 模拟从后端获取数据
         async function fetchCreateActivities() {
             try {
-                const response = await fetch('http://127.0.0.1:8084/api/v1/created_list'); // 替换为实际的API地址
+                const response = await fetch('/api/v1/created_list'); // 替换为实际的API地址
                 if (!response.ok) {
                     throw new Error('无法获取创建的活动数据');
                 }

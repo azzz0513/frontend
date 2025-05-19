@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkin - 创建新活动</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
     <!-- 导航栏 -->
@@ -96,7 +96,7 @@
         </form>
     </div>
 
-    <script src="common.js"></script>
+    <script src="js/common.js"></script>
     <script>
         // 获取表单元素
         const form = document.getElementById('create-activity-form');
@@ -218,7 +218,7 @@
         }
 
             try {
-                const response = await fetch('http://127.0.0.1:8084/api/v1/checkin', {
+                const response = await fetch('/api/v1/checkin', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
