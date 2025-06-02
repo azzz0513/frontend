@@ -17,6 +17,10 @@
                 <label for="username">用户名</label>
             </div>
             <div class="input-group">
+                <input type="email" id="email" name="email" placeholder=" " required>
+                <label for="email">电子邮箱</label>
+            </div>
+            <div class="input-group">
                 <input type="password" id="password" name="password" placeholder=" " required>
                 <label for="password">密码</label>
             </div>
@@ -31,9 +35,9 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
   e.preventDefault();
   const formData = {
     username: document.getElementById('username').value,
+    email: document.getElementById('email').value,
     password: document.getElementById('password').value,
-    re_password: document.getElementById('re_password').value
-  };
+    re_password: document.getElementById('re_password').value  };
   try {
     const response = await fetch('/api/v1/signup', {
       method: 'POST',

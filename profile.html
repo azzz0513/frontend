@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkin - 个人详情</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <header class="navbar">
+        <div class="logo">Checkin</div>
+        <nav class="nav-links">
+            <a href="home.html" class="nav-link">我的签到</a>
+            <a href="create-activity.html" class="nav-link">我发起的签到</a>
+            <a href="members.html" class="nav-link">成员名单</a>
+        </nav>
+        <button class="logout-btn">退出登录</button>
+    </header>
+
+    <!-- 个人详情容器 -->
+    <div class="form-container">
+        <h2>个人详情</h2>
+        <div class="user-info" id="user-info-container"></div>
+    </div>
+
+    <script src="js/common.js"></script>
+    <script>
+        // 页面加载时获取用户信息
+        window.onload = async () => {
+            try {
+                const response = await fetch('/api/v1/user_detail', {
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('获取用户信息失败');
+                }
+
+                const data1 = await response.json();
+                const userData = data1.data;
+                const container = document.getElementById('user-info-container');
+                // 字段名到中文标签的映射（可根据实际后端字段扩展）
+                const labelMap = {
+                    user_id: '用户ID',
+                    user_name: '用户名',
+                    email: '电子邮箱',
+                };
+                container.innerHTML = ''; // 清空原有内容
+                // 遍历用户数据动态生成信息项
+                Object.entries(userData).forEach(([key, value]) => {
+                    if (labelMap[key]) {
+                        const item = document.createElement('div');
+                        item.className = 'user-info-item';
+                        item.innerHTML = `
+                            <span class="info-label">${labelMap[key]}：</span>
+                            <span>${value}</span>
+                        `;
+                        container.appendChild(item);
+                    }
+                });
+            } catch (error) {
+                alert(error.message || '加载用户信息失败，请稍后再试');
+            }
+        };
+
+        // 退出登录按钮功能
+        document.querySelector('.logout-btn').addEventListener('click', () => {
+            window.location.href = 'login.html';
+        });
+    </script>
+</body>
+</html>

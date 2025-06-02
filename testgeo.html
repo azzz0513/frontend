@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkin - 地理位置测试</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container geo-container">
+        <!-- Logo -->
+        <div class="logo">Checkin</div>
+        <h2>地理位置测试</h2>
+        <form id="geo-form">
+            <div class="input-group">
+                <input type="text" id="latitude" name="latitude" placeholder=" " required>
+                <label for="latitude">纬度</label>
+            </div>
+            <div class="input-group">
+                <input type="text" id="longitude" name="longitude" placeholder=" " required>
+                <label for="longitude">经度</label>
+            </div>
+            <button type="submit" class="btn btn-geo">提交</button>
+        </form>
+    </div>
+    <script>
+    document.getElementById('geo-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = {
+            latitude: document.getElementById('latitude').value,
+            longitude: document.getElementById('longitude').value
+        };
+        try {
+            const response = await fetch('/api/v1/geo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+            if (response.ok) {
+                window.location.href = 'home.html';
+            } else {
+                alert('提交失败，请重试');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('网络错误，请重试');
+        }
+    });
+    </script>
+</body>
+</html>

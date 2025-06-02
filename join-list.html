@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkin - 加入成员列表</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <header class="navbar">
+        <div class="logo">Checkin</div>
+        <nav class="nav-links">
+            <a href="/home.html" class="nav-link">我的签到</a>
+            <a href="/create-activity.html" class="nav-link">我发起的签到</a>
+            <a href="/members.html" class="nav-link">成员名单</a>
+        </nav>
+        <button class="logout-btn">退出登录</button>
+    </header>
+
+    <!-- 加入列表容器 -->
+    <div class="form-container">
+        <h2>加入用户列表</h2>
+        <p id="list-info">您确定要加入以下用户列表吗？</p>
+        <div id="list-id-display" class="list-id"></div>
+        <button id="confirm-join" class="btn btn-confirm">确认加入</button>
+        <p id="message" class="message"></p>
+    </div>
+
+<script src="js/common.js"></script>
+<script>
+    // ✅  从 URL 查询参数中获取 listId
+    function getQueryParam(param) {
+        const search = window.location.search || window.location.hash.split('?')[1] || '';
+        const params = new URLSearchParams(search);
+        return params.get(param);
+    }
+
+    const listId = getQueryParam('listId');
+
+    // 页面加载时验证登录状态并显示 listId
+    window.onload = async () => {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            document.getElementById('list-info').textContent = '错误：未登录，请先登录';
+
+            // ✅  构造完整的 redirect URL（带域名）
+            const targetRedirectUrl = `${window.location.origin}${window.location.pathname}?listId=${listId}`;
+            const loginUrl = `/login.html?redirect=${encodeURIComponent(targetRedirectUrl)}`;
+
+            setTimeout(() => {
+                window.location.href = loginUrl;
+            }, 2000);
+            return;
+        }
+
+        if (!listId) {
+            document.getElementById('list-info').textContent = '错误：未提供列表ID';
+            return;
+        }
+
+        try {
+            // 获取当前用户信息
+            const userRes = await fetch(`/api/v1/join_info/${listId}`, {
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('authToken')
+                }
+            });
+
+            if (!userRes.ok) throw new Error('获取用户信息失败');
+            const data1 = await userRes.json();
+            if (data1.code === 1011) {
+                alert('您已加入该列表，即将跳转到主页');
+                setTimeout(() => {
+                    window.location.href = '/home.html';
+                }, 1500);
+                return;
+            }
+            if (data1.code !== 1000) throw new Error(data1.msg || '获取用户信息失败');
+            const userData = data1.data;
+            const userId = userData.data.member_id; // 假设返回的用户 ID 字段是 data.id
+            const userName = userData.data.member_name; // 假设用户名为 data.name
+
+            // 显示用户信息和 listId
+            const userInfoDisplay = document.createElement('div');
+            userInfoDisplay.className = 'user-info';
+            userInfoDisplay.innerHTML = `
+                <p>当前用户：<strong>${userName}</strong> (ID: ${userId})</p>
+                <p>正在尝试加入列表ID：<strong>${listId}</strong></p>
+            `;
+            document.querySelector('.form-container').insertBefore(userInfoDisplay, document.querySelector('h2'));
+
+            // 如果没加入，显示确认按钮
+            document.getElementById('list-id-display').textContent = `列表ID：${listId}`;
+
+        } catch (error) {
+            console.error(error);
+            alert(error.message || '发生错误，请重试');
+            window.location.href = '/home.html';
+        }
+    };
+
+    // 确认加入按钮点击事件
+    document.getElementById('confirm-join').addEventListener('click', async () => {
+        if (!listId) {
+            alert('列表ID不存在');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/v1/join/${listId}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('authToken'),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ list_id: listId })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || '加入列表失败');
+            }
+
+            const result = await response.json();
+            if (result.code !== 1000){
+                throw new Error(result.msg || '加入列表失败');
+            }
+            alert('加入列表成功！');
+            document.getElementById('message').textContent = result.message;
+            document.getElementById('message').style.color = '#28a745'; // 成功提示
+            setTimeout(() => {
+                window.location.href = '/home.html'; // 成功后跳转到成员名单页面
+            }, 4000);
+        } catch (error) {
+            alert(error.message || "加入列表失败");
+            document.getElementById('message').textContent = error.message;
+            document.getElementById('message').style.color = '#dc3545'; // 错误提示
+            setTimeout(() => {
+                window.location.href = '/home.html'; // 错误后跳转到主页
+            }, 4000);
+        }
+    });
+
+    // 退出登录按钮功能
+    document.querySelector('.logout-btn').addEventListener('click', () => {
+        window.location.href = '/login.html';
+    });
+</script>
+</body>
+</html>

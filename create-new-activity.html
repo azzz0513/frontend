@@ -28,7 +28,7 @@
                 <select id="activity-type" name="activityType" required>
                     <option value="">请选择签到类型</option>
                     <option value="one-time">一次性签到</option>
-                    <option value="long-term">长期考勤</option>
+<!--                    <option value="long-term">长期考勤</option>-->
                 </select>
             </div>
 
@@ -66,13 +66,14 @@
                 <select id="checkin-method" name="checkinMethod" required>
                     <option value="">请选择签到方式</option>
                     <option value="verification-code">验证码签到</option>
+                    <option value="qrcode">二维码签到</option>
                 </select>
             </div>
 
             <!-- 验证码输入字段 -->
             <div id="verification-code-field" class="hidden">
                 <div class="input-group">
-                    <input type="text" id="verification-code" name="verificationCode" required>
+                    <input type="text" id="verification-code" name="verificationCode">
                     <label for="verification-code">验证码</label>
                 </div>
             </div>
@@ -171,8 +172,8 @@
             const memberListName = formData.get('memberListName');
 
             const payload = {
-                type_id: activityType === 'one-time' ? 1 : 2,
-                way_id: checkinMethodSelect.value === 'verification-code' ? 1 : 0,
+    type_id: activityType === 'one-time' ? 1 : 2,
+    way_id: checkinMethodSelect.value === 'verification-code' ? 1 : (checkinMethodSelect.value === 'qrcode' ? 2 : 0),
                 list_name: memberListName,
                 title: formData.get('activityName'),
                 content: formData.get('activityDescription'),
@@ -217,27 +218,29 @@
             });
         }
 
-            try {
-                const response = await fetch('/api/v1/checkin', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
-                });
+        try {
+            const response = await fetch('/api/v1/checkin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
 
-                if (!response.ok) {
-                    throw new Error('创建活动失败，请检查输入内容');
-                }
-
-                const result = await response.json();
-                alert(result.message || '活动创建成功！');
-                window.location.href = 'create-activity.html'; // 返回到创建活动列表页
-            } catch (error) {
-                console.error(error);
-                alert(error.message || '创建活动失败，请稍后再试。');
+            if (!response.ok) {
+                throw new Error('创建活动失败，请检查输入内容');
             }
-        });
+            const result = await response.json();
+            if (result.code !== 1000) {
+                throw new Error(result.msg || '创建活动失败');
+            }
+            alert(result.message || '活动创建成功！');
+            window.location.href = 'create-activity.html'; // 返回到创建活动列表页
+        } catch (error) {
+            console.error(error);
+            alert(error.message || '创建活动失败，请稍后再试。');
+        }
+    });
     </script>
 </body>
 </html>

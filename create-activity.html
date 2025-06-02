@@ -9,6 +9,11 @@
 <body>
     <!-- 导航栏 -->
     <header class="navbar">
+        <div class="menu-btn">
+            <div class="menu-btn-line"></div>
+            <div class="menu-btn-line"></div>
+            <div class="menu-btn-line"></div>
+        </div>
         <div class="logo">Checkin</div>
         <nav class="nav-links">
             <a href="home.html" class="nav-link">我的签到</a>
@@ -17,6 +22,12 @@
         </nav>
         <button class="logout-btn">退出登录</button>
     </header>
+
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <a href="profile.html" class="sidebar-link">个人主页</a>
+        <a href="change-password.html" class="sidebar-link">修改密码</a>
+    </div>
 
     <!-- 我创建的活动列表容器 -->
     <div class="activity-container">
@@ -32,6 +43,11 @@
     </div>
     <script src="js/common.js"></script>
     <script>
+        // 菜单按钮点击事件
+        document.querySelector('.menu-btn').addEventListener('click', () => {
+            document.querySelector('.sidebar').classList.toggle('active');
+        });
+
         // 模拟从后端获取数据
         async function fetchCreateActivities() {
             try {

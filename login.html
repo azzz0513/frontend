@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkin - 登录</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
     <div class="container login-container">
@@ -23,13 +23,14 @@
                 <label>
                     <input type="checkbox" name="remember"> 记住我
                 </label>
-                <a href="#">忘记密码？</a>
             </div>
             <button type="submit" class="btn btn-login">登录</button>
         </form>
         <div class="back-to-other">
-            还没有账号？<a href="register.html">立即注册</a>
-        </div>
+    还没有账号？<a href="register.html">立即注册</a>
+    <br>
+    <a href="forgot-password.html">忘记密码？</a>
+</div>
     </div>
     <script>
         document.querySelector('form').addEventListener('submit', async (e) => {
@@ -48,7 +49,17 @@
             const data = await response.json();
             if (data.data) {
                 localStorage.setItem('authToken', data.data);
-                window.location.href = 'home.html';
+                // 提取URL中的redirect参数
+                const urlParams = new URLSearchParams(window.location.search);
+                let redirectUrl = urlParams.get('redirect');
+                
+                // 处理跳转
+                if (redirectUrl) {
+                    redirectUrl = decodeURIComponent(redirectUrl);
+                    window.location.href = redirectUrl;
+                } else {
+                    window.location.href = 'home.html'; // 默认跳转页面
+                }
             } else {
                 alert('登录失败，请重试');
             }

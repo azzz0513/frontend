@@ -9,6 +9,11 @@
 <body>
     <!-- 导航栏 -->
     <header class="navbar">
+        <div class="menu-btn">
+            <div class="menu-btn-line"></div>
+            <div class="menu-btn-line"></div>
+            <div class="menu-btn-line"></div>
+        </div>
         <div class="logo">Checkin</div>
         <nav class="nav-links">
             <a href="home.html" class="nav-link">我的签到</a>
@@ -17,6 +22,12 @@
         </nav>
         <button class="logout-btn">退出登录</button>
     </header>
+
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <a href="profile.html" class="sidebar-link">个人主页</a>
+        <a href="change-password.html" class="sidebar-link">修改密码</a>
+    </div>
 
     <!-- 活动详情容器 -->
     <div class="activity-detail-container">
@@ -37,6 +48,10 @@
 
     <script src="js/common.js"></script>
     <script>
+        // 菜单按钮点击事件
+        document.querySelector('.menu-btn').addEventListener('click', () => {
+            document.querySelector('.sidebar').classList.toggle('active');
+        });
         // // 在所有请求中添加Authorization头
         // const authToken = localStorage.getItem('authToken');
         // if (authToken) {
@@ -87,9 +102,7 @@
             event.preventDefault(); // 阻止默认提交行为
 
             const formData = {
-                verificationCode: event.target.verificationCode.value,
-                activityId: activityId,
-                userId: userId
+                password: event.target.verificationCode.value
             };
             try {
                 const response = await fetch(`/api/v1/participate/${activityId}`, {
@@ -105,6 +118,10 @@
                 }
 
                 const result = await response.json();
+                if (result.Code !== 1000) {
+                    throw new Error(result.Msg || '打卡失败，请稍后再试。');
+                }
+                
                 alert(result.message || '打卡成功！');
                 window.location.href = 'home.html'; // 返回主页
             } catch (error) {

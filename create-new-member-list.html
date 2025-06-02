@@ -9,6 +9,11 @@
 <body>
     <!-- 导航栏 -->
     <header class="navbar">
+        <div class="menu-btn">
+            <div class="menu-btn-line"></div>
+            <div class="menu-btn-line"></div>
+            <div class="menu-btn-line"></div>
+        </div>
         <div class="logo">Checkin</div>
         <nav class="nav-links">
             <a href="home.html" class="nav-link">我的签到</a>
@@ -17,6 +22,12 @@
         </nav>
         <button class="logout-btn">退出登录</button>
     </header>
+
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <a href="profile.html" class="sidebar-link">个人主页</a>
+        <a href="change-password.html" class="sidebar-link">修改密码</a>
+    </div>
 
     <!-- 创建名单表单容器 -->
     <div class="form-container">
@@ -39,6 +50,10 @@
 
     <script src="js/common.js"></script>
     <script>
+        // 菜单按钮点击事件
+        document.querySelector('.menu-btn').addEventListener('click', () => {
+            document.querySelector('.sidebar').classList.toggle('active');
+        });
         // 获取表单元素
         const form = document.getElementById('create-member-list-form');
         const errorMessageDiv = document.getElementById('error-message');
@@ -70,6 +85,9 @@
                 }
 
                 const result = await response.json();
+                if (result.code !== 1000) {
+                    throw new Error(result.msg || '创建名单失败，请稍后再试。');
+                }
                 alert(result.message || '名单创建成功！');
                 window.location.href = 'members.html'; // 返回到成员名单页面
             } catch (error) {

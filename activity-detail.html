@@ -5,6 +5,67 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkin - 活动详情</title>
     <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* 二维码模态框样式 */
+        .qr-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.7);
+        }
+
+        .qr-modal-content {
+            position: relative;
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 600px;
+            max-height: 80%;
+            border-radius: 8px;
+        }
+
+        .qr-image {
+            width: 100%;
+            height: auto;
+            max-height: 500px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            color: #000;
+        }
+
+        .show-qr-btn {
+            margin-top: 15px;
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .show-qr-btn:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
     <!-- 导航栏 -->
@@ -18,11 +79,25 @@
         <button class="logout-btn">退出登录</button>
     </header>
 
+    <!-- 二维码模态框 -->
+    <div id="qrModal" class="qr-modal" style="display: none;">
+        <div class="qr-modal-content">
+            <span id="closeBtn" class="close-btn">&times;</span>
+            <img id="qrImage" class="qr-image" src="" alt="签到二维码">
+        </div>
+    </div>
+
     <!-- 活动详情容器 -->
     <div class="activity-detail-container">
         <h2>活动详情</h2>
         <div id="activity-info" class="activity-info">
             <!-- 活动信息将动态生成 -->
+        </div>
+
+        <!-- 筛选按钮 -->
+        <div class="filter-section" id="checkin-filter" style="display: none;">
+            <button class="btn btn-filter" data-status="checkedIn">已打卡</button>
+            <button class="btn btn-filter" data-status="notCheckedIn">未打卡</button>
         </div>
 
         <!-- 成员名单列表 -->
@@ -40,11 +115,11 @@
         async function fetchActivityDetail() {
             try {
                 const response = await fetch(`/api/v1/checkin/${activityId}?page=1&size=10`, {
-    headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-    }
-});
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
                 if (!response.ok) {
                     throw new Error('无法获取活动详情');
                 }
@@ -57,7 +132,8 @@
 
                     <div class="detail-item"><span>活动名称:</span> ${data.title || '未命名'}</div>
                     <div class="detail-item"><span>活动描述:</span> ${data.content || '暂无描述'}</div>
-                    <div class="detail-item"><span>已打卡人数:</span> ${data.count.toLocaleString()}人</div>
+                    <div class="detail-item"><span>已打卡人数:</span> ${data.checked_count.toLocaleString()}人</div>
+                    <div class="detail-item"><span>未打卡人数:</span> ${data.un_checked_count.toLocaleString()}人</div>
                     ${data.type_id === 1 ? `
                         <div class="detail-item"><span>开始时间:</span> ${new Date(data.start_time).toLocaleString()}</div>
                         <div class="detail-item"><span>持续时间:</span> ${data.duration_minutes.toLocaleString()}mins </div>
@@ -67,21 +143,57 @@
                         <div class="detail-item"><span>每日截止时间:</span> ${data.daily_deadline}</div>
                     `}
                     <div class="detail-item"><span>活动类型:</span> ${data.type_id === 1 ? '一次性活动' : '长期考勤'}</div>
+                    ${data.way_id === 2 ? `
+                        <button class="show-qr-btn btn">展示二维码</button>
+                    ` : ''}
                 `;
 
                 // 渲染成员名单
                 const memberList = document.getElementById('member-list');
-                const members = data.members;
+                let currentStatus = 'notCheckedIn'; // 默认显示全部
+                const filterButtons = document.querySelectorAll('#checkin-filter .btn-filter');
+                const filterSection = document.getElementById('checkin-filter');
 
-                if (members.length === 0) {
-                    memberList.innerHTML = '<p>暂无成员参与此活动。</p>';
-                    return;
+                // 确保二维码按钮存在后再绑定事件
+                document.querySelector('.show-qr-btn')?.addEventListener('click', fetchAndShowQRCode);
+
+                // 显示筛选按钮（仅一次性活动）
+                if (data.type_id === 1) {
+                    filterSection.style.display = 'block';
                 }
 
-                if (data.type_id === 1) {
-                    // 一次性活动：列出用户名、是否打卡、打卡时间
+                // 筛选按钮点击事件
+                filterButtons.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        currentStatus = btn.dataset.status;
+                        filterButtons.forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        renderMembers();
+                    });
+                });
+
+                // 渲染函数
+                function renderMembers() {
+                    let displayMembers = [];
+                    switch(currentStatus){
+                        case 'all':
+                            displayMembers = [...data.checked_members, ...data.un_checked_members];
+                            break;
+                        case 'checkedIn':
+                            displayMembers = data.checked_members;
+                            break;
+                        case 'notCheckedIn':
+                            displayMembers = data.un_checked_members;
+                            break;
+                    }
+
+                    if (displayMembers.length === 0) {
+                        memberList.innerHTML = '<p>暂无符合条件的成员。</p>';
+                        return;
+                    }
+
                     memberList.innerHTML = `
-                        <h3>未打卡名单</h3>
+                        <h3>成员名单（${currentStatus === 'all' ? '全部' : currentStatus === 'checkedIn' ? '已打卡' : '未打卡'}）</h3>
                         <table class="member-table">
                             <thead>
                                 <tr>
@@ -90,17 +202,24 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                ${members.map(member => `
+                                ${displayMembers.map(member => `
                                     <tr>
                                         <td>${member.user_name || '未命名'}</td>
-                                        <td>${member.checkedIn ? '已打卡' : '未打卡'}</td>
+                                        <td>${currentStatus === 'checkedIn' || member.checked_in ? '已打卡' : '未打卡'}</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
                         </table>
                     `;
+                }
+
+                // 初始渲染
+                renderMembers();
+
+                if (data.type_id === 1) {
+                    // 一次性活动：使用后端返回的两个名单数组
                 } else {
-                    // 长期考勤：列出用户名、打卡次数
+                    // 长期考勤：保持原有逻辑（假设后端仍返回打卡次数）
                     memberList.innerHTML = `
                         <h3>成员名单</h3>
                         <table class="member-table">
@@ -111,7 +230,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                ${members.map(member => `
+                                ${data.members.map(member => `
                                     <tr>
                                         <td>${member.name || '未命名'}</td>
                                         <td>${member.checkInCount || 0}</td>
@@ -130,6 +249,47 @@
 
         // 页面加载时调用
         window.onload = fetchActivityDetail;
+
+        // 绑定二维码按钮点击事件
+        document.querySelector('.show-qr-btn')?.addEventListener('click', fetchAndShowQRCode);
+
+        // 二维码相关元素
+        const qrModal = document.getElementById('qrModal');
+        const qrImage = document.getElementById('qrImage');
+        const closeBtn = document.getElementById('closeBtn');
+
+        // 获取并展示二维码
+        async function fetchAndShowQRCode() {
+            try {
+                const response = await fetch(`/api/v1/qr_code/${activityId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('获取二维码失败');
+
+                const blob = await response.blob(); // 接收图片二进制流
+                const imageUrl = URL.createObjectURL(blob); // 创建临时地址
+
+                qrImage.src = imageUrl; // 设置到 img 标签
+                qrModal.style.display = 'block'; // 显示模态框
+            } catch (error) {
+                alert(`二维码加载失败：${error.message}`);
+            }
+        }
+
+        // 关闭二维码模态框
+        closeBtn.addEventListener('click', () => {
+            qrModal.style.display = 'none';
+        });
+
+        // 点击模态框背景关闭
+        window.addEventListener('click', (e) => {
+            if (e.target === qrModal) {
+                qrModal.style.display = 'none';
+            }
+        });
 
         // 退出登录按钮功能
         document.querySelector('.logout-btn').addEventListener('click', () => {
